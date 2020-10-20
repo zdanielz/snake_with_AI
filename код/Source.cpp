@@ -6,21 +6,32 @@
 #include "Snake.h"
 using namespace std;
 
-HDC dc, dcCompatible;
-int width, height;
+int SnakeProc(int x_, int y_, int width, int height, int padding, int SizeOfPart, COLORREF mainColor, COLORREF secondColor, HDC dc, HDC dcCompatible, vector direction, HBITMAP hbm) {
+	Snake snake = Snake(x_, y_);
+	HBRUSH hBrush;
+	bool game = true;
 
-int wndThreadProc(MSG* msg) {
-	while (GetMessage(msg, NULL, 0, 0)) {
-		TranslateMessage(msg); //Преобразуем сообщения
-		DispatchMessage(msg); //Передаём сообщение соответствующей функции окна
+	while (game) { //Получаем сообщение из очереди
+		hBrush = CreateSolidBrush(mainColor); //выбор цвета кисти (серый)
+		SelectObject(dcCompatible, hBrush); //выбор кисти для буферного контекста устройства
+		for (int y = 0; y < y_; y++) {
+			for (int x = 0; x < x_; x++) {
+				CreatRect(dcCompatible, x, y, SizeOfPart, width, height, padding, hbm);
+			}
+		} // создание поля квадратов
+		DeleteObject(hBrush);
+		hBrush = CreateSolidBrush(secondColor); //выбор цвета кисти (оранж)
+		SelectObject(dcCompatible, hBrush); //выбор кисти для буферного контекста устройства
+		snake.SnakeMakeMov(direction);
+		for (int i = 0; i < snake.SizeOfSnake(); i++) {
+			CreatRect(dcCompatible, snake.snake_mas[i], SizeOfPart, x_, y_, padding, hbm);
+		}  // отрисовка змейки
+		DeleteObject(hBrush);
+		BitBlt(dc, 0, 0, width, height, dcCompatible, 0, 0, SRCCOPY);
+		Sleep(100);
 	}
-	return -1;
-} //Функция обработки сообщений
-
-void wndThreadProcStart(MSG* msg) {
-	thread t(wndThreadProc, ref(msg));
-	t.join();
-} //Функция обработки сообщений в отдельном процессе
+	return 0;
+}
 
 LRESULT CALLBACK WindowProc(
 	HWND hwnd,
@@ -38,14 +49,15 @@ int WINAPI WinMain(
 	int nCmdShow 			// показывает состояние окна 
 )
 {
+	int x_, y_, width, height, SizeOfPart, padding;
+	HDC dc, dcCompatible;
 	HBITMAP hbm;
-	int x_, y_, SizeOfPart, padding;
 	vector direction = { -1, 0 };
 	COLORREF mainColor = RGB(50, 50, 50), secondColor = RGB(226, 124, 62); //основной цвет поля, серый, вторичный цвет, оранж
 
 	width = GetSystemMetrics(SM_CXSCREEN);   //ширина экрана
 	height = GetSystemMetrics(SM_CYSCREEN);  //высота экрана
-	
+
 	SizeOfPart = 10;  //размер одного элемента поля
 	padding = 1;     //отступ между частями поля
 
@@ -83,7 +95,7 @@ int WINAPI WinMain(
 		NULL, // дескриптор меню
 		HINSTANCE(hInstance), // дескриптор экземпляра приложения
 		NULL); // ничего не передаём из WndProc
-	
+
 	if (!hMainWnd) {
 		// в случае некорректного создания окошка (неверные параметры и тп):
 		MessageBox(NULL, "Не получилось создать окно!", "Ошибка", MB_OK);
@@ -91,7 +103,14 @@ int WINAPI WinMain(
 	}
 	ShowWindow(hMainWnd, SW_MAXIMIZE); // отображаем окошко
 	UpdateWindow(hMainWnd); // обновляем окошко
-		
+
+	dc = GetDC(hMainWnd); //получение контекста устройства монитора
+
+	dcCompatible = CreateCompatibleDC(dc); //создание буферного контекста устройства
+	hbm = CreateCompatibleBitmap(dc, width, height); //создание битмапа
+
+	SelectObject(dcCompatible, hbm); //выбор битмапа для буферного контекста устройства
+
 	int c = 0; //проссто итератор
 	x_ = width / (SizeOfPart + padding);
 	y_ = height / (SizeOfPart + padding); //размер поля в... каких то еденицах
@@ -107,48 +126,14 @@ int WINAPI WinMain(
 		}
 	} //подгон частей поля под ширину экрана
 
-	dc = GetDC(hMainWnd); //получение контекста устройства монитора
+	thread SnakeThread(SnakeProc, x_, y_, width, height, padding, SizeOfPart, mainColor, secondColor, dc, dcCompatible, direction, hbm);
+	SnakeThread.detach();
 
-	dcCompatible = CreateCompatibleDC(dc); //создание буферного контекста устройства
-	hbm = CreateCompatibleBitmap(dc, width, height); //создание битмапа
-
-	SelectObject(dcCompatible, hbm); //выбор битмапа для буферного контекста устройства
-
-	HBRUSH Brush = CreateSolidBrush(mainColor); //выбор цвета кисти (серый)
-	SelectObject(dcCompatible, Brush); //выбор кисти для буферного контекста устройства 
-
-	for (int y = 0; y < y_; y++) {
-		for (int x = 0; x < x_; x++) {
-			CreatRect(dcCompatible, x, y, SizeOfPart, width, height, padding, hbm);
-		}
-	} //создание поля квадратов
-
-	Snake snake = Snake(x_, y_);
-	HBRUSH hBrush;
-	bool game = true;
-
-	while (game) { //Получаем сообщение из очереди
-		hBrush = CreateSolidBrush(mainColor); //выбор цвета кисти (серый)
-		SelectObject(dcCompatible, hBrush); //выбор кисти для буферного контекста устройства
-		for (int y = 0; y < y_; y++) {
-			for (int x = 0; x < x_; x++) {
-				CreatRect(dcCompatible, x, y, SizeOfPart, width, height, padding, hbm);
-			}
-		} // создание поля квадратов
-		DeleteObject(hBrush);
-		hBrush = CreateSolidBrush(secondColor); //выбор цвета кисти (оранж)
-		SelectObject(dcCompatible, hBrush); //выбор кисти для буферного контекста устройства
-		snake.SnakeMakeMov(direction);
-		for (int i = 0; i < snake.SizeOfSnake(); i++) {
-			CreatRect(dcCompatible, snake.snake_mas[i], SizeOfPart, x_, y_, padding, hbm);
-		}  // отрисовка змейки
-		DeleteObject(hBrush);
-		SNDMSG(hMainWnd, WM_PAINT, NULL, NULL);
-		Sleep(100);
+	while (GetMessage(&msg, NULL, 0, 0)) {
+		TranslateMessage(&msg); //Преобразуем сообщения
+		DispatchMessage(&msg); //Передаём сообщение соответствующей функции окна
 	}
 
-	DeleteObject(Brush);			          //  УБОРКА МУСОРА  //
-	DeleteObject(hbm);				          //  УБОРКА МУСОРА  //
 	DeleteObject(dcCompatible);               //  УБОРКА МУСОРА  //
 
 	return 0; // возвращаем код выхода из приложения
@@ -156,8 +141,6 @@ int WINAPI WinMain(
 
 LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
 	switch (uMsg) {
-	case WM_PAINT:
-		BitBlt(dc, 0, 0, width, height, dcCompatible, 0, 0, SRCCOPY);
 	case WM_KEYDOWN:
 		break;
 	case WM_DESTROY:
