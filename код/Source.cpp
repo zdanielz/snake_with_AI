@@ -56,7 +56,7 @@ int GameProc(int x_, int y_, int width, int height, int padding, int SizeOfPart,
 		}  // отрисовка змейки
 		DeleteObject(hBrush);
 		BitBlt(dc, 0, 0, width, height, dcCompatible, 0, 0, SRCCOPY);
-		Sleep(100);
+		Sleep(50);
 	}
 	snake.~Snake();
 	return 0;
@@ -161,16 +161,16 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
 	case WM_KEYDOWN:
 		switch (wParam) {
 			case VK_LEFT:
-				SnakeDirection = { -1, 0 };
+				if (SnakeDirection.x != 1) { SnakeDirection = { -1, 0 }; }
 				break;
 			case VK_RIGHT:
-				SnakeDirection = { 1, 0 };
+				if (SnakeDirection.x != -1) { SnakeDirection = { 1, 0 }; };
 				break;
 			case VK_UP:
-				SnakeDirection = { 0, 1 };
+				if (SnakeDirection.y != -1) { SnakeDirection = { 0, 1 }; };
 				break;
 			case VK_DOWN:
-				SnakeDirection = { 0, -1 };
+				if (SnakeDirection.y != 1) { SnakeDirection = { 0, -1 }; };
 				break;
 			case VK_SPACE: {
 				if (!FullScreen)//Из оконного во весь экран
