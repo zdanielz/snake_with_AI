@@ -2,17 +2,26 @@
 
 #include <windows.h>
 #include <iostream>
+#include <random>
 #include <thread>
+#include <time.h>
 #include "Snake.h"
 using namespace std;
 
-int SnakeProc(int x_, int y_, int width, int height, int padding, int SizeOfPart, COLORREF mainColor, COLORREF secondColor, HDC dc, HDC dcCompatible, vector direction, HBITMAP hbm) {
-	Snake snake = Snake(x_, y_);
+const int SizeOfPart = 10;  //размер одного элемента поля
+const int padding = 1;     //отступ между частями поля
+
+Snake snake = Snake(GetSystemMetrics(SM_CXSCREEN) / (SizeOfPart + padding), GetSystemMetrics(SM_CYSCREEN) / (SizeOfPart + padding));
+coord SnakeDirection = { -1, 0 }; //направление змейки
+
+int GameProc(int x_, int y_, int width, int height, int padding, int SizeOfPart, COLORREF mainColor, COLORREF AppleCollor, COLORREF snakeColor, HDC dc, HDC dcCompatible, HBITMAP hbm) {
 	HBRUSH hBrush;
 	bool game = true;
+	bool appleExist = false;
+	Apple apple;
 
-	while (game) { //Получаем сообщение из очереди
-		hBrush = CreateSolidBrush(mainColor); //выбор цвета кисти (серый)
+	while (game) {
+		hBrush = CreateSolidBrush(mainColor);
 		SelectObject(dcCompatible, hBrush); //выбор кисти для буферного контекста устройства
 		for (int y = 0; y < y_; y++) {
 			for (int x = 0; x < x_; x++) {
@@ -20,9 +29,28 @@ int SnakeProc(int x_, int y_, int width, int height, int padding, int SizeOfPart
 			}
 		} // создание поля квадратов
 		DeleteObject(hBrush);
-		hBrush = CreateSolidBrush(secondColor); //выбор цвета кисти (оранж)
+		if (!appleExist) {
+			apple = Apple(rand() % x_, rand() % y_);
+			hBrush = CreateSolidBrush(AppleCollor);
+			SelectObject(dcCompatible, hBrush);
+			CreatRect(dcCompatible, apple.coordAple, SizeOfPart, x_, y_, padding, hbm); //отрисовка яблока
+			DeleteObject(hBrush);
+			appleExist = true;
+		}
+		else {
+			hBrush = CreateSolidBrush(AppleCollor);
+			SelectObject(dcCompatible, hBrush);
+			CreatRect(dcCompatible, apple.coordAple, SizeOfPart, x_, y_, padding, hbm); //отрисовка яблока
+			DeleteObject(hBrush);
+		}
+		hBrush = CreateSolidBrush(snakeColor);
 		SelectObject(dcCompatible, hBrush); //выбор кисти для буферного контекста устройства
-		snake.SnakeMakeMov(direction);
+		snake.SnakeMakeMov(SnakeDirection);
+		if (snake.snake_mas[0] == apple.coordAple) {
+			apple.~Apple();
+			snake.SneakEatApple();
+			appleExist = false;
+		}
 		for (int i = 0; i < snake.SizeOfSnake(); i++) {
 			CreatRect(dcCompatible, snake.snake_mas[i], SizeOfPart, x_, y_, padding, hbm);
 		}  // отрисовка змейки
@@ -30,8 +58,11 @@ int SnakeProc(int x_, int y_, int width, int height, int padding, int SizeOfPart
 		BitBlt(dc, 0, 0, width, height, dcCompatible, 0, 0, SRCCOPY);
 		Sleep(100);
 	}
+	snake.~Snake();
 	return 0;
 }
+
+bool FullScreen = false;
 
 LRESULT CALLBACK WindowProc(
 	HWND hwnd,
@@ -49,17 +80,14 @@ int WINAPI WinMain(
 	int nCmdShow 			// показывает состояние окна 
 )
 {
-	int x_, y_, width, height, SizeOfPart, padding;
+	srand(time(NULL));
+	int x_, y_, width, height;
 	HDC dc, dcCompatible;
 	HBITMAP hbm;
-	vector direction = { -1, 0 };
-	COLORREF mainColor = RGB(50, 50, 50), secondColor = RGB(226, 124, 62); //основной цвет поля, серый, вторичный цвет, оранж
-
+	COLORREF mainColor = RGB(50, 50, 50), snakeColor = RGB(rand() % 255, rand() % 255, rand() % 255);//secondColor = RGB(226, 124, 62); //основной цвет поля, серый. вторичный цвет, оранж / random
+	COLORREF appleCollor = RGB(255, 0, 0); //цвет яблока
 	width = GetSystemMetrics(SM_CXSCREEN);   //ширина экрана
 	height = GetSystemMetrics(SM_CYSCREEN);  //высота экрана
-
-	SizeOfPart = 10;  //размер одного элемента поля
-	padding = 1;     //отступ между частями поля
 
 	TCHAR szClassName[] = "Мой класс"; // строка с именем класса
 	HWND hMainWnd; // создаём дескриптор будущего окошка
@@ -115,19 +143,8 @@ int WINAPI WinMain(
 	x_ = width / (SizeOfPart + padding);
 	y_ = height / (SizeOfPart + padding); //размер поля в... каких то еденицах
 
-	while (((width % (SizeOfPart + padding)) != 0) & ((height % (SizeOfPart + padding)) != 0)) {
-		if (SizeOfPart == 0) { break; }
-		SizeOfPart -= 1;
-	}
-	if (SizeOfPart == 0) {
-		while (((width % (SizeOfPart + padding)) != 0) & ((height % (SizeOfPart + padding)) != 0)) {
-			if ((SizeOfPart == (SizeOfPart * 2))) { break; }
-			SizeOfPart += 1;
-		}
-	} //подгон частей поля под ширину экрана
-
-	thread SnakeThread(SnakeProc, x_, y_, width, height, padding, SizeOfPart, mainColor, secondColor, dc, dcCompatible, direction, hbm);
-	SnakeThread.detach();
+	thread GameThread(GameProc, x_, y_, width, height, padding, SizeOfPart, mainColor, appleCollor, snakeColor, dc, dcCompatible, hbm);
+	GameThread.detach();
 
 	while (GetMessage(&msg, NULL, 0, 0)) {
 		TranslateMessage(&msg); //Преобразуем сообщения
@@ -142,6 +159,36 @@ int WINAPI WinMain(
 LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
 	switch (uMsg) {
 	case WM_KEYDOWN:
+		switch (wParam) {
+			case VK_LEFT:
+				SnakeDirection = { -1, 0 };
+				break;
+			case VK_RIGHT:
+				SnakeDirection = { 1, 0 };
+				break;
+			case VK_UP:
+				SnakeDirection = { 0, 1 };
+				break;
+			case VK_DOWN:
+				SnakeDirection = { 0, -1 };
+				break;
+			case VK_SPACE: {
+				if (!FullScreen)//Из оконного во весь экран
+				{
+					SetWindowLong(hWnd, GWL_STYLE, WS_POPUP);//Устанавливаем новые стили
+					ShowWindow(hWnd, SW_SHOWMAXIMIZED);//Окно во весь экран
+					FullScreen = true;
+				}
+				else//Из всего эранна в оконное
+				{
+					SetWindowLong(hWnd, GWL_STYLE, WS_OVERLAPPEDWINDOW | WS_VISIBLE);
+					ShowWindow(hWnd, SW_SHOWDEFAULT);//Показываем обычное окно
+					FullScreen = false;
+				}
+			}
+			default:
+				break;
+		}
 		break;
 	case WM_DESTROY:
 		PostQuitMessage(NULL);
