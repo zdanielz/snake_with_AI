@@ -1,20 +1,15 @@
 #pragma once
 using namespace std;
 
-struct vector {
+const int START_SNAKE_SIZE = 5;
+
+struct coord {
 	int x;
 	int y;
 }; //просто структура вектора
 
-vector* addElement(vector *mas, int &size) {
-	size = size - 1;
-	vector *temp = new vector[size + 1];
-	for (int i = 0; i < size + 1; i++) { temp[i] = mas[i]; }
-	temp[size + 1] = mas[size];
-	delete[] mas;
-	size += 1;
-
-	return temp;
+bool operator==(coord& value1, coord& value2) {
+	return (bool)(value1.x == value2.x)&&(value1.y == value2.y);
 }
 
 void CreatRect(HDC dc, int nx, int ny, int SizeOfPart, int width, int height, int padding, HBITMAP hbm) {
@@ -29,7 +24,7 @@ void CreatRect(HDC dc, int nx, int ny, int SizeOfPart, int width, int height, in
 	Polygon(dc, p, size);
 } //функция создающяя квадраты, принимает координаты
 
-void CreatRect(HDC dc, vector xy, int SizeOfPart, int width, int height, int padding, HBITMAP hbm) {
+void CreatRect(HDC dc, coord xy, int SizeOfPart, int width, int height, int padding, HBITMAP hbm) {
 	const int size = 4;
 	POINT p[size];
 
@@ -42,36 +37,32 @@ void CreatRect(HDC dc, vector xy, int SizeOfPart, int width, int height, int pad
 } //функция создающяя квадраты, принимает векторы
 
 class Snake {
-
 	public:
-		HDC BuferDC;
-		HBITMAP hbm;
-		vector direction = {0 , 1};
-		COLORREF MainColor;
-		int x, y, width, height, padding, SizeOfPart;
-		const int START_SNAKE_SIZE = 5;
+		
+		coord direction = {0 , 1};
+		int x, y, width, height;
 		int snake_lenght = START_SNAKE_SIZE;
-		vector* snake_mas = new vector[START_SNAKE_SIZE]; //масив точек с их координатами, змейка
+		coord* snake_mas = new coord[snake_lenght]; //масив точек с их координатами, змейка
 
 
 		Snake(int width_, int height_) {
 			x = width_ / 2, y = height_ / 2, width = width_, height = height_;
-			vector start;
+			coord start;
 			start.x = x;
 			start.y = y;
 
-			for (int i = 0; i < START_SNAKE_SIZE; i++) {
+			for (int i = 0; i < snake_lenght; i++) {
 				snake_mas[i] = { start.x, start.y - i };
 			}
 		}
 
 		void SneakEatApple() {
-			snake_mas = addElement(snake_mas, snake_lenght);
+			snake_lenght += 1;
 		}
 
-		void SnakeMakeMov(vector direction_) {
+		void SnakeMakeMov(coord direction_) {
 			direction = direction_;
-			vector main_buf, second_buf;
+			coord main_buf, second_buf;
 			main_buf.x = snake_mas[0].x;
 			main_buf.y = snake_mas[0].y;
 			snake_mas[0].x += direction.x;
@@ -94,3 +85,15 @@ class Snake {
 			delete[] snake_mas;
 		}
 }; //класс змейки
+
+
+class Apple {
+public:
+	coord coordAple;
+	Apple(int x, int y) {
+		coordAple.x = x;
+		coordAple.y = y;
+	};
+	Apple() {};
+	~Apple() {};
+};
