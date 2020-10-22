@@ -9,7 +9,7 @@ struct coord {
 }; //просто структура вектора
 
 bool operator==(coord& value1, coord& value2) {
-	return (bool)(value1.x == value2.x)&&(value1.y == value2.y);
+	return (bool)(value1.x == value2.x) && (value1.y == value2.y);
 }
 
 void CreatRect(HDC dc, int nx, int ny, int SizeOfPart, int width, int height, int padding, HBITMAP hbm) {
@@ -38,12 +38,7 @@ void CreatRect(HDC dc, coord xy, int SizeOfPart, int width, int height, int padd
 
 class Snake {
 	public:
-		
-		coord direction = {0 , 1};
-		int x, y, width, height;
-		int snake_lenght = START_SNAKE_SIZE;
-		coord* snake_mas = new coord[snake_lenght]; //масив точек с их координатами, змейка
-
+		vector<coord> snake_mas;
 
 		Snake(int width_, int height_) {
 			x = width_ / 2, y = height_ / 2, width = width_, height = height_;
@@ -51,13 +46,15 @@ class Snake {
 			start.x = x;
 			start.y = y;
 
-			for (int i = 0; i < snake_lenght; i++) {
-				snake_mas[i] = { start.x, start.y - i };
+			for (int i = 0; i < START_SNAKE_SIZE; i++) {
+				snake_mas.push_back({ start.x, start.y - i });
+				snake_lenght += 1;
 			}
 		}
 
 		void SneakEatApple() {
 			snake_lenght += 1;
+			snake_mas.push_back(coord{});
 		}
 
 		void SnakeMakeMov(coord direction_) {
@@ -81,9 +78,12 @@ class Snake {
 			return snake_lenght;
 		}
 
-		~Snake() {
-			delete[] snake_mas;
-		}
+		~Snake() {}
+		
+	private:
+		coord direction = { 0 , 1 };
+		int x, y, width, height;
+		int snake_lenght = 0;
 }; //класс змейки
 
 
