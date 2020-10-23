@@ -27,6 +27,8 @@ int GameProc(int x_, int y_, int width, int height, int padding, int SizeOfPart,
 	Apple apple;
 	int score = 0;
 	char buf1[32];
+        
+	srand(time(NULL));
 
 	while (game) {
 		hBrush = CreateSolidBrush(mainColor);
