@@ -17,7 +17,10 @@ Snake snake = Snake(GetSystemMetrics(SM_CXSCREEN) / (SizeOfPart + padding), GetS
 coord SnakeDirection = { -1, 0 }; //направление змейки
 HWND hMainWnd;
 
-int GameProc(int x_, int y_, int width, int height, int padding, int SizeOfPart, COLORREF mainColor, COLORREF AppleCollor, COLORREF snakeColor, HDC dc, HDC dcCompatible, HBITMAP hbm) {
+int GameProc(int x_, int y_, int width, int height, int padding, int SizeOfPart,
+	COLORREF mainColor, COLORREF AppleCollor, COLORREF snakeColor, COLORREF textColor,
+	HDC dc, HDC dcCompatible, HBITMAP hbm) {
+
 	HBRUSH hBrush;
 	bool game = true;
 	bool appleExist = false;
@@ -35,11 +38,14 @@ int GameProc(int x_, int y_, int width, int height, int padding, int SizeOfPart,
 		} // создание поля квадратов
 		DeleteObject(hBrush);
 		if (!appleExist) {
-			apple = Apple(1 + rand() % (x_ - 1), 1 + rand() % (y_ - 1));
+			apple = Apple(rand() % (x_ - (x_ / 12)), rand() % (y_ - (y_ / 11)));
+
 			hBrush = CreateSolidBrush(AppleCollor);
 			SelectObject(dcCompatible, hBrush);
 			CreatRect(dcCompatible, apple.coordAple, SizeOfPart, x_, y_, padding, hbm); //отрисовка яблока
 			DeleteObject(hBrush);
+
+			BitBlt(dc, 0, 0, width, height, dcCompatible, 0, 0, SRCCOPY);
 			appleExist = true;
 		}
 		else {
@@ -63,16 +69,19 @@ int GameProc(int x_, int y_, int width, int height, int padding, int SizeOfPart,
 		DeleteObject(hBrush);
 
 		if (snake.snake_mas[0].x == -1 |
-			snake.snake_mas[0].x == x_ - (x_ / 11) |
+			snake.snake_mas[0].x == x_ - (x_ / 12) |
 			snake.snake_mas[0].y == -1 |
-			snake.snake_mas[0].y == y_ - (y_ / 10)) { game = false; } //game over если зейка ударилась об край
+			snake.snake_mas[0].y == y_ - (y_ / 11)) { game = false; } //game over если зейка ударилась об край
 
 		for (int i = 1; i < snake.SizeOfSnake(); i++) {
 			if (snake.snake_mas[0] == snake.snake_mas[i]) { game = false; }
 		} //game over если зейка ударилась об себя
 
+		SetTextColor(dcCompatible, textColor);
+
 		sprintf(buf1, "SCORE : %i\x00", score);
 		DrawText(dcCompatible, buf1, -1, &tagRECT({ width - 100, 0, width, height }), DT_CENTER);
+		
 		BitBlt(dc, 0, 0, width, height, dcCompatible, 0, 0, SRCCOPY);
 		Sleep(50);
 	}
@@ -116,7 +125,7 @@ int WINAPI WinMain(
 	HDC dc, dcCompatible;
 	HBITMAP hbm;
 	COLORREF mainColor = RGB(50, 50, 50), snakeColor = RGB(rand() % 255, rand() % 255, rand() % 255);//secondColor = RGB(226, 124, 62); //основной цвет поля, серый. вторичный цвет, оранж / random
-	COLORREF appleCollor = RGB(255, 0, 0); //цвет яблока
+	COLORREF appleCollor = RGB(255, 0, 0), textColor = RGB(255, 210, 0); //цвет яблока, и цвет текста
 	width = GetSystemMetrics(SM_CXSCREEN);   //ширина экрана
 	height = GetSystemMetrics(SM_CYSCREEN);  //высота экрана
 
@@ -168,12 +177,13 @@ int WINAPI WinMain(
 	hbm = CreateCompatibleBitmap(dc, width, height); //создание битмапа
 
 	SelectObject(dcCompatible, hbm); //выбор битмапа для буферного контекста устройства
-
+	SetBkMode(dcCompatible, TRANSPARENT);
+	
 	int c = 0; //проссто итератор
 	x_ = width / (SizeOfPart + padding);
 	y_ = height / (SizeOfPart + padding); //размер поля в... каких то еденицах
 
-	thread GameThread(GameProc, x_, y_, width, height, padding, SizeOfPart, mainColor, appleCollor, snakeColor, dc, dcCompatible, hbm);
+	thread GameThread(GameProc, x_, y_, width, height, padding, SizeOfPart, mainColor, appleCollor, snakeColor, textColor, dc, dcCompatible, hbm);
 	
 	while (GetMessage(&msg, NULL, 0, 0)) {
 		TranslateMessage(&msg); //Преобразуем сообщения
