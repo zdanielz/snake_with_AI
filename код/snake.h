@@ -1,16 +1,16 @@
 #pragma once
 using namespace std;
 
-const int START_SNAKE_SIZE = 5;
+const int START_SNAKE_SIZE = 5; //стартовый разер змейки
 
 struct coord {
 	int x;
 	int y;
-}; //просто структура вектора
+}; //просто структура координат
 
 bool operator==(coord& value1, coord& value2) {
 	return (bool)(value1.x == value2.x) && (value1.y == value2.y);
-}
+}  //перегрузка == для сравнения коорднат
 
 void CreatRect(HDC dc, int nx, int ny, int SizeOfPart, int width, int height, int padding, HBITMAP hbm) {
 	const int size = 4;
@@ -22,7 +22,7 @@ void CreatRect(HDC dc, int nx, int ny, int SizeOfPart, int width, int height, in
 	p[3] = { nx + (padding * nx + nx * SizeOfPart), ny + SizeOfPart + (padding * ny + ny * SizeOfPart) };
 
 	Polygon(dc, p, size);
-} //функция создающяя квадраты, принимает координаты
+} //функция создающяя квадраты, принимает координаты в виде значений х и у
 
 void CreatRect(HDC dc, coord xy, int SizeOfPart, int width, int height, int padding, HBITMAP hbm) {
 	const int size = 4;
@@ -34,15 +34,15 @@ void CreatRect(HDC dc, coord xy, int SizeOfPart, int width, int height, int padd
 	p[3] = { xy.x + (padding * xy.x + xy.x * SizeOfPart), xy.y + SizeOfPart + (padding * xy.y + xy.y * SizeOfPart) };
 
 	Polygon(dc, p, size);
-} //функция создающяя квадраты, принимает векторы
+} //функция создающяя квадраты, принимает координаты в виде структуры coord
 
 class Snake {
 	public:
-		vector<coord> snake_mas;
+		vector<coord> snake_mas; //вектор, содержащий координаты каждого элемента тела змейки
 
 		Snake(int width_, int height_) {
-			x = width_ / 2, y = height_ / 2, width = width_, height = height_;
-			coord start;
+			x = width_ / 2, y = height_ / 2;
+			coord start; // стартовое положение головы змейки
 			start.x = x;
 			start.y = y;
 
@@ -50,12 +50,12 @@ class Snake {
 				snake_mas.push_back({ start.x, start.y - i });
 				snake_lenght += 1;
 			}
-		}
+		} //конструктор змейки
 
 		void SneakEatApple() {
 			snake_lenght += 1;
 			snake_mas.push_back(coord{});
-		}
+		} //функция съедания яблока
 
 		void SnakeMakeMov(coord direction_) {
 			direction = direction_;
@@ -72,28 +72,28 @@ class Snake {
 				main_buf.x = second_buf.x;
 				main_buf.y = second_buf.y;
 			}
-		}
+		} //функция движения змейки
 
 		int SizeOfSnake() {
 			return snake_lenght;
-		}
+		} //функция для определения размера змейки
 
 		~Snake() {}
 		
 	private:
-		coord direction = { 0 , 1 };
-		int x, y, width, height;
-		int snake_lenght = 0;
+		coord direction = { 0 , 1 }; //направление змейки
+		int x, y; //размеры поля
+		int snake_lenght = 0;  //длинна змейки
 }; //класс змейки
 
 
 class Apple {
 public:
-	coord coordAple;
+	coord coordAple;  //координаты яблока
 	Apple(int x, int y) {
 		coordAple.x = x;
 		coordAple.y = y;
 	};
-	Apple() {};
+	Apple() {};       //конструктор для случаев когда это квантовое яблоко (оно вроде есть, но его нигде нет)
 	~Apple() {};
-}; //класс яблока
+}; //класс яблока, мальенький как само яблокло
