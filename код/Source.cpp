@@ -126,8 +126,7 @@ int WINAPI WinMain(
 	HINSTANCE hPrevInstance,		// дескриптор предыдущего экземпляра окна 
 	LPSTR lpCmdLine,			// указатель на командную строку
 	int nCmdShow 			// показывает состояние окна 
-)
-{
+) {
 	srand(time(NULL));         //обновление генератора случайных чисел
 	int x_, y_, width, height; //переменые для ширины/высоты игрового поля, и для ширины/высоты экрана 
 	
@@ -204,6 +203,7 @@ int WINAPI WinMain(
 
 	GameThread.detach(); //не ожидаем завершения процесса игры, если он не завершен
 	snake.~Snake();				              //  УБОРКА МУСОРА  //
+	DeleteObject(hbm);						  //  УБОРКА МУСОРА  //
 	DeleteObject(dc);						  //  УБОРКА МУСОРА  //
 	DeleteObject(dcCompatible);               //  УБОРКА МУСОРА  //
 
