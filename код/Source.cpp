@@ -124,12 +124,21 @@ int GameProc(int x_, int y_, int width, int height, int padding, int SizeOfPart,
 		if (OldSkoolMode) { SetTextColor(dcCompatible, OldSecondColor); }							 // выбор цвета текста
 		else { SetTextColor(dcCompatible, textColor); }												 //
 																									 //
-		sprintf(buf1, "SCORE : %i\x00", score);														 // отрисовка очков
-		DrawText(dcCompatible, buf1, -1, &tagRECT({ width - 100, 0, width, height }), DT_CENTER);    // в правом верхнем углу
-		
+		sprintf(buf1, "SCORE : %i\x00", score);														 // отрисовка очков в правом верхнем углу
+		DrawText(dcCompatible, buf1, -1, &tagRECT({ width - 100, 0, width, height }), DT_CENTER);     //	
 		BitBlt(dc, 0, 0, width, height, dcCompatible, 0, 0, SRCCOPY); //обновление экрана окна (копирование из буферного контекста окна в main контекст)
 		Sleep(50);
 	}
+
+	HFONT bigTextFont = CreateFont(35, 15, 0, 0, 4, 0, 0, 0, DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY,
+						 DEFAULT_PITCH | FF_DONTCARE, ("Arial")); //1 - высота шрифта, 2 - средняя ширина шрифта, 3 - угол наклона шрифта,
+																  //4 - угол ориентации базисной линии, 5 - толщина шрифта, 6 - описатель
+																  //параметра курсивнго шрифта, 7 - описатель параметра подчеркивания,
+																  //8 - описатель параметра зачеркивания, 9 - идентификатор набора символов
+																  //10 - точность вывода, 11 - точность отсечения, 12 - качество вывода
+																  //13 - шаг между символами шрифта и семейство, 14 - имя шрифта
+	SelectObject(dcCompatible, bigTextFont);
+
 	DrawText(dcCompatible, "GAME OVER", -1, &tagRECT({ 0 - (width / 40), height / 2 - 50, width, height }), DT_CENTER);                 //
 																																		//
 	for (int i = 0; i < 10; i++) {																										// анимация
@@ -138,10 +147,10 @@ int GameProc(int x_, int y_, int width, int height, int padding, int SizeOfPart,
 	}																																	//
 																																		//
 	for (int i = 1; i < 3000; i++) {																									//
-		DrawText(dcCompatible, "GAME OVER", -1, &tagRECT({ rand() % (width * 2) - width, rand() % height, width, height }), DT_CENTER); //
+		DrawText(dcCompatible, "GAME OVER", -1, &tagRECT({ rand() % (width * 2) - width, rand() % height, width, height }), DT_LEFT); //
 		BitBlt(dc, 0, 0, width, height, dcCompatible, 0, 0, SRCCOPY);																	//
 		Sleep(3000 / (i * 3));																											//
-	}																																	//ы
+	}																																	//
 
 	MessageBox(NULL, "!GAME OVER!", NULL, MB_OK); //сообщение об окончании игры
 	PostMessage(hMainWnd, WM_QUIT, NULL, NULL);  //выход из цикла обработки сообщений в главном потоке
