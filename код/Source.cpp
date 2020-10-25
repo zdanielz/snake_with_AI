@@ -9,15 +9,15 @@
 #include "Snake.h"
 using namespace std;
 
-const int SizeOfPart = 9;                   //размер одного элемента поля
+const int SizeOfPart = 9;                    //размер одного элемента поля
 const int padding = 1;                       //отступ между частями поля
 COLORREF mainColor = RGB(50, 50, 50);        //основной цвет поля, серый
 COLORREF snakeColor = RGB(rand() % 255, rand() % 255, rand() % 255);    //snakeColor = RGB(226, 124, 62);  //вторичный цвет, оранж / random
 COLORREF AppleCollor = RGB(255, 0, 0);		 //цвет яблока
 COLORREF textColor = RGB(255, 210, 0);		 //цвет текста
 
-COLORREF OldMainColor = RGB(142, 179, 102);	 //цвет фона в олдскул моде
-COLORREF OldSecondColor = RGB(23, 26, 7);   //цвет остального в олдскул моде
+COLORREF OldMainColor = RGB(87, 166, 74);	 //цвет фона в олдскул моде
+COLORREF OldSecondColor = RGB(3, 6, 1);    //цвет остального в олдскул моде
 
 Snake snake = Snake(GetSystemMetrics(SM_CXSCREEN) / (SizeOfPart + padding), GetSystemMetrics(SM_CYSCREEN) / (SizeOfPart + padding)); //
 coord SnakeDirection = { 0, 0 }; //направление змейки
@@ -180,6 +180,8 @@ int WINAPI WinMain(
 	HDC dc, dcCompatible;  //переменные для контекста устройства и совместимого буферного контекста устройства
 	HBITMAP hbm;           //битмап для буферного контекста устройства
 	
+	snakeColor = RGB(rand() % 255, rand() % 255, rand() % 255);    //snakeColor = RGB(226, 124, 62);  //вторичный цвет, оранж / random
+
 	width = GetSystemMetrics(SM_CXSCREEN);   //ширина экрана
 	height = GetSystemMetrics(SM_CYSCREEN);  //высота экрана
 
@@ -258,13 +260,13 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) { /
 	switch (uMsg) {
 	case WM_KEYDOWN: //обработка сообщений о нажатии клавиш
 		if ((wParam == VK_LEFT) or (wParam == 0x41))       //стрелка влево или a
-			{ if (SnakeDirection.x != 1) { SnakeDirection = { -1, 0 }; }}
+			{ if (SnakeDirection.x != 1) { SnakeDirection = { -1, 0 }; Sleep(100); }}
 		if ((wParam == VK_RIGHT) or (wParam == 0x44))      //стрелка вправо или d
-			{ if (SnakeDirection.x != -1) { SnakeDirection = { 1, 0 }; }}
+			{ if (SnakeDirection.x != -1) { SnakeDirection = { 1, 0 }; Sleep(100); }}
 		if ((wParam == VK_UP) or (wParam == 0x57))			//стрелка вверх или w
-			{ if (SnakeDirection.y != -1) { SnakeDirection = { 0, 1 }; }}
+			{ if (SnakeDirection.y != -1) { SnakeDirection = { 0, 1 }; Sleep(100); }}
 		if ((wParam == VK_DOWN) or (wParam == 0x53))		//стрелка вниз или s
-			{ if (SnakeDirection.y != 1) { SnakeDirection = { 0, -1 }; }}
+			{ if (SnakeDirection.y != 1) { SnakeDirection = { 0, -1 }; Sleep(100); }}
 
 		switch (wParam) {
 			case 0x4F :			//если О английская нажата то включается олдскул мод
