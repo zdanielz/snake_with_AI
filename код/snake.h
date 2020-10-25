@@ -1,7 +1,7 @@
 #pragma once
 using namespace std;
 
-const int START_SNAKE_SIZE = 5; //стартовый разер змейки
+const int START_SNAKE_SIZE = 1; //стартовый разер змейки
 
 struct coord {
 	int x;
