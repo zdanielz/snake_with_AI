@@ -20,7 +20,7 @@ COLORREF OldMainColor = RGB(142, 179, 102);	 //цвет фона в олдску
 COLORREF OldSecondColor = RGB(23, 26, 7);   //цвет остального в олдскул моде
 
 Snake snake = Snake(GetSystemMetrics(SM_CXSCREEN) / (SizeOfPart + padding), GetSystemMetrics(SM_CYSCREEN) / (SizeOfPart + padding)); //
-coord SnakeDirection = { -1, 0 }; //направление змейки
+coord SnakeDirection = { 0, 0 }; //направление змейки
 
 HWND hMainWnd;
 
