@@ -9,43 +9,76 @@
 #include "Snake.h"
 using namespace std;
 
-const int SizeOfPart = 10;  //размер одного элемента поля
-const int padding = 1;     //отступ между частями поля
+const int SizeOfPart = 9;                   //размер одного элемента поля
+const int padding = 1;                       //отступ между частями поля
+COLORREF mainColor = RGB(50, 50, 50);        //основной цвет поля, серый
+COLORREF snakeColor = RGB(rand() % 255, rand() % 255, rand() % 255);    //snakeColor = RGB(226, 124, 62);  //вторичный цвет, оранж / random
+COLORREF AppleCollor = RGB(255, 0, 0);		 //цвет яблока
+COLORREF textColor = RGB(255, 210, 0);		 //цвет текста
+
+COLORREF OldMainColor = RGB(142, 179, 102);	 //цвет фона в олдскул моде
+COLORREF OldSecondColor = RGB(23, 26, 7);   //цвет остального в олдскул моде
 
 Snake snake = Snake(GetSystemMetrics(SM_CXSCREEN) / (SizeOfPart + padding), GetSystemMetrics(SM_CYSCREEN) / (SizeOfPart + padding)); //
 coord SnakeDirection = { -1, 0 }; //направление змейки
 
 HWND hMainWnd;
 
+bool FullScreen = true;
+bool OldSkoolMode = false;
+
 int GameProc(int x_, int y_, int width, int height, int padding, int SizeOfPart,
-	COLORREF mainColor, COLORREF AppleCollor, COLORREF snakeColor, COLORREF textColor,
 	HDC dc, HDC dcCompatible, HBITMAP hbm) {
 
-	HBRUSH hBrush;
 	bool game = true;
 	bool appleExist = false;
+
 	Apple apple;
+	HBRUSH hBrush;
 	int score = 0;
+
 	char buf1[32];
+
+	const int size = 4;
+	POINT p[size];
+	p[0] = {0, 0};
+	p[1] = {width, 0};
+	p[2] = {width, height};
+	p[3] = {0, height};
 
 	srand(time(NULL));
 
 	while (game) {
-		hBrush = CreateSolidBrush(mainColor); //выбор цвета для отрисовки поля
-		SelectObject(dcCompatible, hBrush); //выбор кисти для буферного контекста устройства для отрисовки поля
+		if (OldSkoolMode) {
+			hBrush = CreateSolidBrush(OldMainColor);
+			SelectObject(dcCompatible, hBrush); //выбор кисти для буферного контекста устройства для отрисовки поля
 
-		for (int y = 0; y < y_; y++) {  //отрисовка поля
-			for (int x = 0; x < x_; x++) {
-				CreatRect(dcCompatible, x, y, SizeOfPart, width, height, padding, hbm);
+			for (int y = 0; y < y_; y++) {  //отрисовка поля
+				for (int x = 0; x < x_; x++) {
+					CreatRect(dcCompatible, x, y, SizeOfPart, width, height, padding, hbm);
+				}
 			}
+
+			Polygon(dcCompatible, p, size);
 		}
+		else {
+			hBrush = CreateSolidBrush(mainColor);
+			SelectObject(dcCompatible, hBrush); //выбор кисти для буферного контекста устройства для отрисовки поля
+
+			for (int y = 0; y < y_; y++) {  //отрисовка поля
+				for (int x = 0; x < x_; x++) {
+					CreatRect(dcCompatible, x, y, SizeOfPart, width, height, padding, hbm);
+				}
+			}
+		} //выбор цвета для отрисовки поля
 
 		DeleteObject(hBrush);
 		if (!appleExist) {
 			//создание яблока если его уже сьели
-			apple = Apple(rand() % (x_ - (x_ / 12)), rand() % (y_ - (y_ / 11)));
+			apple = Apple(rand() % (x_), rand() % (y_));
 
-			hBrush = CreateSolidBrush(AppleCollor); //выбор цвета для отрисовки яблока
+			if (OldSkoolMode) { hBrush = CreateSolidBrush(RGB(0, 0, 0)); }
+			else { hBrush = CreateSolidBrush(AppleCollor); }	//выбор цвета для отрисовки яблока
 			SelectObject(dcCompatible, hBrush);
 			CreatRect(dcCompatible, apple.coordAple, SizeOfPart, x_, y_, padding, hbm); //отрисовка яблока
 			DeleteObject(hBrush);
@@ -55,13 +88,16 @@ int GameProc(int x_, int y_, int width, int height, int padding, int SizeOfPart,
 		}
 		else {
 			//отрисовка яблока если оно уже существует
-			hBrush = CreateSolidBrush(AppleCollor);	//выбор цвета для отрисовки яблока
+			if (OldSkoolMode) { hBrush = CreateSolidBrush(OldSecondColor); }
+			else { hBrush = CreateSolidBrush(AppleCollor); }	//выбор цвета для отрисовки яблока
 			SelectObject(dcCompatible, hBrush);
 			CreatRect(dcCompatible, apple.coordAple, SizeOfPart, x_, y_, padding, hbm); //отрисовка яблока
 			DeleteObject(hBrush);
 		}
 
-		hBrush = CreateSolidBrush(snakeColor); //выбор цвета для отрисовки змейки
+		if (OldSkoolMode) { hBrush = CreateSolidBrush(OldSecondColor); } //выбор цвета для отрисовки змейки
+		else { hBrush = CreateSolidBrush(snakeColor); }; //выбор цвета для отрисовки змейки
+		
 		SelectObject(dcCompatible, hBrush); //выбор кисти для буферного контекста устройства
 		snake.SnakeMakeMov(SnakeDirection);
 		if (snake.snake_mas[0] == apple.coordAple) {
@@ -77,35 +113,35 @@ int GameProc(int x_, int y_, int width, int height, int padding, int SizeOfPart,
 		DeleteObject(hBrush);
 
 		if (snake.snake_mas[0].x == -1 |
-			snake.snake_mas[0].x == x_ - (x_ / 12) |
+			snake.snake_mas[0].x == x_ |
 			snake.snake_mas[0].y == -1 |
-			snake.snake_mas[0].y == y_ - (y_ / 11)) { game = false; } //game over если зейка ударилась об край
+			snake.snake_mas[0].y == y_ ) { game = false; } //game over если зейка ударилась об край
 
 		for (int i = 1; i < snake.SizeOfSnake(); i++) {
 			if (snake.snake_mas[0] == snake.snake_mas[i]) { game = false; }
 		} //game over если зейка ударилась об себя
 
-		SetTextColor(dcCompatible, textColor);														 //
-																									 // отрисовка очков
-		sprintf(buf1, "SCORE : %i\x00", score);														 // в правом верхнем углу
-		DrawText(dcCompatible, buf1, -1, &tagRECT({ width - 100, 0, width, height }), DT_CENTER);    //
+		if (OldSkoolMode) { SetTextColor(dcCompatible, OldSecondColor); }							 // выбор цвета текста
+		else { SetTextColor(dcCompatible, textColor); }												 //
+																									 //
+		sprintf(buf1, "SCORE : %i\x00", score);														 // отрисовка очков
+		DrawText(dcCompatible, buf1, -1, &tagRECT({ width - 100, 0, width, height }), DT_CENTER);    // в правом верхнем углу
 		
 		BitBlt(dc, 0, 0, width, height, dcCompatible, 0, 0, SRCCOPY); //обновление экрана окна (копирование из буферного контекста окна в main контекст)
 		Sleep(50);
 	}
-	DrawText(dcCompatible, "GAME OVER", -1, &tagRECT({ 0 - (width / 40), height / 2 - 50, width, height }), DT_CENTER);
-	
-	for (int i = 0; i < 10; i++) {
-		BitBlt(dc, 0, 0, width, height, dcCompatible, 0, 0, SRCCOPY);
-		Sleep(100);
-	}
-
-	for (int i = 1; i < 3000; i++) {
-		//анимация окончания игры
-		DrawText(dcCompatible, "GAME OVER", -1, &tagRECT({ rand() % (width * 2) - width, rand() % height, width, height }), DT_CENTER);
-		BitBlt(dc, 0, 0, width, height, dcCompatible, 0, 0, SRCCOPY);
-		Sleep(3000 / (i * 3));
-	}
+	DrawText(dcCompatible, "GAME OVER", -1, &tagRECT({ 0 - (width / 40), height / 2 - 50, width, height }), DT_CENTER);                 //
+																																		//
+	for (int i = 0; i < 10; i++) {																										// анимация
+		BitBlt(dc, 0, 0, width, height, dcCompatible, 0, 0, SRCCOPY);																	// окончания
+		Sleep(100);																														// игры
+	}																																	//
+																																		//
+	for (int i = 1; i < 3000; i++) {																									//
+		DrawText(dcCompatible, "GAME OVER", -1, &tagRECT({ rand() % (width * 2) - width, rand() % height, width, height }), DT_CENTER); //
+		BitBlt(dc, 0, 0, width, height, dcCompatible, 0, 0, SRCCOPY);																	//
+		Sleep(3000 / (i * 3));																											//
+	}																																	//ы
 
 	MessageBox(NULL, "!GAME OVER!", NULL, MB_OK); //сообщение об окончании игры
 	PostMessage(hMainWnd, WM_QUIT, NULL, NULL);  //выход из цикла обработки сообщений в главном потоке
@@ -119,8 +155,6 @@ LRESULT CALLBACK WndProc(
 	LPARAM lParam				 //дополнительные параметры собщения
 );
 
-LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
-
 int WINAPI WinMain(
 	HINSTANCE hInstance,		// дескриптор текущего экземпляра окна
 	HINSTANCE hPrevInstance,		// дескриптор предыдущего экземпляра окна 
@@ -133,9 +167,6 @@ int WINAPI WinMain(
 	HDC dc, dcCompatible;  //переменные для контекста устройства и совместимого буферного контекста устройства
 	HBITMAP hbm;           //битмап для буферного контекста устройства
 	
-	COLORREF mainColor = RGB(50, 50, 50), snakeColor = RGB(rand() % 255, rand() % 255, rand() % 255);//secondColor = RGB(226, 124, 62); //основной цвет поля, серый. вторичный цвет, оранж / random
-	COLORREF appleCollor = RGB(255, 0, 0), textColor = RGB(255, 210, 0); //цвет яблока, и цвет текста
-	
 	width = GetSystemMetrics(SM_CXSCREEN);   //ширина экрана
 	height = GetSystemMetrics(SM_CYSCREEN);  //высота экрана
 
@@ -144,7 +175,7 @@ int WINAPI WinMain(
 
 	TCHAR szClassName[] = "Мой класс"; // строка с именем класса
 	MSG msg; // создём экземпляр структуры MSG для обработки сообщений
-	WNDCLASSEX wc; // создаём экземпляр, для обращения к членам класса WNDCLASSEX
+	WNDCLASSEX wc; //содержит характеристики окна
 	wc.cbSize = sizeof(wc); // размер структуры (в байтах)
 	wc.style = CS_HREDRAW | CS_VREDRAW; // стиль класса окна
 	wc.lpfnWndProc = WndProc; // указатель на пользовательскую функцию
@@ -193,7 +224,7 @@ int WINAPI WinMain(
 	SelectObject(dcCompatible, hbm); //выбор битмапа для буферного контекста устройства
 	SetBkMode(dcCompatible, TRANSPARENT); //делает beckground прозрачным
 
-	thread GameThread(GameProc, x_, y_, width, height, padding, SizeOfPart, mainColor, appleCollor, snakeColor, textColor, dc, dcCompatible, hbm);
+	thread GameThread(GameProc, x_, y_, width, height, padding, SizeOfPart, dc, dcCompatible, hbm);
 	//запуск процесса игры
 
 	while (GetMessage(&msg, NULL, 0, 0)) { //получаем сообщение
@@ -210,12 +241,13 @@ int WINAPI WinMain(
 	return 0;
 }
 
-bool FullScreen = true;
-
 LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) { //функця обработки сообщений
 	switch (uMsg) {
 	case WM_KEYDOWN: //обработка сообщений о нажатии клавиш
 		switch (wParam) {
+			case 0x4F :			//если О английская нажата то включается олдскул мод
+				OldSkoolMode = !OldSkoolMode;
+				break;
 			case VK_LEFT:       //стрелка влево
 				if (SnakeDirection.x != 1) { SnakeDirection = { -1, 0 }; }
 				break;
