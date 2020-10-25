@@ -16,10 +16,10 @@ void CreatRect(HDC dc, int nx, int ny, int SizeOfPart, int width, int height, in
 	const int size = 4;
 	POINT p[size];
 
-	p[0] = { nx + (padding * nx + nx * SizeOfPart), ny + (padding * ny + ny * SizeOfPart) };
-	p[1] = { nx + SizeOfPart + (padding * nx + nx * SizeOfPart), ny + (padding * ny + ny * SizeOfPart) };
-	p[2] = { nx + SizeOfPart + (padding * nx + nx * SizeOfPart), ny + SizeOfPart + (padding * ny + ny * SizeOfPart) };
-	p[3] = { nx + (padding * nx + nx * SizeOfPart), ny + SizeOfPart + (padding * ny + ny * SizeOfPart) };
+	p[0] = { nx + (padding + nx * SizeOfPart), ny + (padding + ny * SizeOfPart) };
+	p[1] = { nx + SizeOfPart + (padding + nx * SizeOfPart), ny + (padding + ny * SizeOfPart) };
+	p[2] = { nx + SizeOfPart + (padding + nx * SizeOfPart), ny + SizeOfPart + (padding + ny * SizeOfPart) };
+	p[3] = { nx + (padding + nx * SizeOfPart), ny + SizeOfPart + (padding + ny * SizeOfPart) };
 
 	Polygon(dc, p, size);
 } //функция создающяя квадраты, принимает координаты в виде значений х и у
@@ -28,10 +28,10 @@ void CreatRect(HDC dc, coord xy, int SizeOfPart, int width, int height, int padd
 	const int size = 4;
 	POINT p[size];
 
-	p[0] = { xy.x + (padding * xy.x + xy.x * SizeOfPart), xy.y + (padding * xy.y + xy.y * SizeOfPart) };
-	p[1] = { xy.x + SizeOfPart + (padding * xy.x + xy.x * SizeOfPart), xy.y + (padding * xy.y + xy.y * SizeOfPart) };
-	p[2] = { xy.x + SizeOfPart + (padding * xy.x + xy.x * SizeOfPart), xy.y + SizeOfPart + (padding * xy.y + xy.y * SizeOfPart) };
-	p[3] = { xy.x + (padding * xy.x + xy.x * SizeOfPart), xy.y + SizeOfPart + (padding * xy.y + xy.y * SizeOfPart) };
+	p[0] = { xy.x + (padding + xy.x * SizeOfPart), xy.y + (padding + xy.y * SizeOfPart) };
+	p[1] = { xy.x + SizeOfPart + (padding + xy.x * SizeOfPart), xy.y + (padding + xy.y * SizeOfPart) };
+	p[2] = { xy.x + SizeOfPart + (padding + xy.x * SizeOfPart), xy.y + SizeOfPart + (padding + xy.y * SizeOfPart) };
+	p[3] = { xy.x + (padding + xy.x * SizeOfPart), xy.y + SizeOfPart + (padding + xy.y * SizeOfPart) };
 
 	Polygon(dc, p, size);
 } //функция создающяя квадраты, принимает координаты в виде структуры coord
@@ -86,7 +86,6 @@ class Snake {
 		int snake_lenght = 0;  //длинна змейки
 }; //класс змейки
 
-
 class Apple {
 public:
 	coord coordAple;  //координаты яблока
@@ -94,6 +93,6 @@ public:
 		coordAple.x = x;
 		coordAple.y = y;
 	};
-	Apple() {};       //конструктор для случаев когда это квантовое яблоко (оно вроде есть, но его нигде нет)
+	Apple() {};       //конструктор для случаев когда это квантовое яблоко (оно вроде есть, но где?)
 	~Apple() {};
 }; //класс яблока, мальенький как само яблокло
