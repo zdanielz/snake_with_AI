@@ -21,6 +21,8 @@ COLORREF OldSecondColor = RGB(23, 26, 7);   //цвет остального в �
 
 Snake snake = Snake(GetSystemMetrics(SM_CXSCREEN) / (SizeOfPart + padding), GetSystemMetrics(SM_CYSCREEN) / (SizeOfPart + padding)); //
 coord SnakeDirection = { 0, 0 }; //направление змейки
+coord NULLcoord = { 0, 0 }; //нулевые координаты, нужны только для сравнения
+
 
 HWND hMainWnd;
 
@@ -107,6 +109,8 @@ int GameProc(int x_, int y_, int width, int height, int padding, int SizeOfPart,
 			appleExist = false;
 		}
 
+		if ((snake.SizeOfSnake() < 5) && !(SnakeDirection == NULLcoord)) { snake.SneakEatApple(); }
+
 		for (int i = 0; i < snake.SizeOfSnake(); i++) {
 			CreatRect(dcCompatible, snake.snake_mas[i], SizeOfPart, x_, y_, padding, hbm);
 		}  // отрисовка змейки
@@ -125,7 +129,7 @@ int GameProc(int x_, int y_, int width, int height, int padding, int SizeOfPart,
 		else { SetTextColor(dcCompatible, textColor); }												 //
 																									 //
 		sprintf(buf1, "SCORE : %i\x00", score);														 // отрисовка очков в правом верхнем углу
-		DrawText(dcCompatible, buf1, -1, &tagRECT({ width - 100, 0, width, height }), DT_CENTER);     //	
+		DrawText(dcCompatible, buf1, -1, &tagRECT({ width - 100, 0, width, height }), DT_CENTER);    //	
 		BitBlt(dc, 0, 0, width, height, dcCompatible, 0, 0, SRCCOPY); //обновление экрана окна (копирование из буферного контекста окна в main контекст)
 		Sleep(50);
 	}
