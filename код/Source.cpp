@@ -253,21 +253,18 @@ int WINAPI WinMain(
 LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) { //функця обработки сообщений
 	switch (uMsg) {
 	case WM_KEYDOWN: //обработка сообщений о нажатии клавиш
+		if ((wParam == VK_LEFT) or (wParam == 0x41))       //стрелка влево или a
+			{ if (SnakeDirection.x != 1) { SnakeDirection = { -1, 0 }; }}
+		if ((wParam == VK_RIGHT) or (wParam == 0x44))      //стрелка вправо или d
+			{ if (SnakeDirection.x != -1) { SnakeDirection = { 1, 0 }; }}
+		if ((wParam == VK_UP) or (wParam == 0x57))			//стрелка вверх или w
+			{ if (SnakeDirection.y != -1) { SnakeDirection = { 0, 1 }; }}
+		if ((wParam == VK_DOWN) or (wParam == 0x53))		//стрелка вниз или s
+			{ if (SnakeDirection.y != 1) { SnakeDirection = { 0, -1 }; }}
+
 		switch (wParam) {
 			case 0x4F :			//если О английская нажата то включается олдскул мод
 				OldSkoolMode = !OldSkoolMode;
-				break;
-			case VK_LEFT:       //стрелка влево
-				if (SnakeDirection.x != 1) { SnakeDirection = { -1, 0 }; }
-				break;
-			case VK_RIGHT:      //стрелка вправо
-				if (SnakeDirection.x != -1) { SnakeDirection = { 1, 0 }; };
-				break;
-			case VK_UP:			//стрелка вверх
-				if (SnakeDirection.y != -1) { SnakeDirection = { 0, 1 }; };
-				break;
-			case VK_DOWN:		//стрелка вниз
-				if (SnakeDirection.y != 1) { SnakeDirection = { 0, -1 }; };
 				break;
 			case VK_SPACE: {    //пробел
 				if (!FullScreen)//Из оконного во весь экран
