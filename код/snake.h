@@ -38,8 +38,6 @@ void CreatRect(HDC dc, coord xy, int SizeOfPart, int width, int height, int padd
 
 class Snake {
 	public:
-		vector<coord> snake_mas; //вектор, содержащий координаты каждого элемента тела змейки
-
 		Snake(int width_, int height_) {
 			x = width_ / 2, y = height_ / 2;
 			coord start; // стартовое положение головы змейки
@@ -78,21 +76,34 @@ class Snake {
 			return snake_lenght;
 		} //функция для определения размера змейки
 
+		vector<coord> GetSnakeMas() {
+			return snake_mas;
+		}
+
+		coord GetDataDirection() { return direction; }
+		void SetDataDirection(coord direction_) { direction = direction_; }
+		void SetDataSnakeLenght(int lenght) { snake_lenght = lenght; }
+		void SetDataSnakeMas(vector<coord> SnakeMas) { snake_mas = SnakeMas; }
+
 		~Snake() {}
 		
 	private:
+		vector<coord> snake_mas; //вектор, содержащий координаты каждого элемента тела змейки
 		coord direction = { 0 , 1 }; //направление змейки
 		int x, y; //размеры поля
 		int snake_lenght = 0;  //длинна змейки
 }; //класс змейки
 
 class Apple {
-public:
-	coord coordAple;  //координаты яблока
-	Apple(int x, int y) {
-		coordAple.x = x;
-		coordAple.y = y;
-	};
-	Apple() {};       //конструктор для случаев когда это квантовое яблоко (оно вроде есть, но где?)
-	~Apple() {};
+	public:
+		Apple(int x, int y) {
+			coordApple.x = x;
+			coordApple.y = y;
+		};
+		coord GetAppleCoord() { return coordApple; }
+		void SetCoordApple(coord coordApple_) { coordApple = coordApple_; }
+		Apple() {};       //конструктор для случаев когда это квантовое яблоко (оно вроде есть, но где?)
+		~Apple() {};
+	private:
+		coord coordApple;  //координаты яблока
 }; //класс яблока, мальенький как само яблокло
